@@ -1,0 +1,357 @@
+swagger: "2.0"
+info:
+  description: "REST-API DOC for zelda. You can view and consume the APIs here."
+  version: "1.0.0"
+  title: "ZELDA"
+  contact:
+    email: "weshen@redhat.com"
+host: "10.73.2.3:12321"
+basePath: "/zelda"
+tags:
+- name: "runs"
+  description: "Everything about your runs."
+- name: "products"
+  description: "Products the team is testing."
+- name: "calendars"
+  description: "Important days like REL_PREP, GA etc./"
+schemes:
+- "http"
+paths:
+  /runs/{run_name}:
+    put:
+      tags:
+      - "runs"
+      summary: "Upload your run"
+      description: ""
+      operationId: "updatePet"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "run_name"
+        required: true
+        type: "string"
+        in: "path"
+        description: "run name you wanna upload"
+      - in: "body"
+        name: "body"
+        description: "original run object that needs to be added to the database"
+        required: true
+        schema:
+          $ref: "#/definitions/originalRun"
+      responses:
+        "201":
+          description: "return test run name."
+          schema:
+            type: "object"
+            properties:
+              run_name:
+                type: "string"
+    get:
+      tags:
+      - runs
+      summary: "show test run details"
+      description: "test run details"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "run_name"
+        in: "path"
+        required: true
+        type: "string"
+        description: "run name you wanna fetch"
+      responses:
+        "200":
+          description: "successful fetch"
+          schema:
+            $ref: "#/definitions/run"
+    delete:
+      tags:
+      - runs
+      description: "delete test run"
+      parameters:
+      - name: "run_name"
+        type: "string"
+        in: "path"
+        required: true
+        description: "run name you wanna remove"
+      responses:
+        "200":
+          description: OK
+  /runs/{run_name}/cases/{case_id}:
+    delete:
+      tags:
+      - runs
+      description: "delete test case in a paticular run"
+      parameters:
+      - name: "run_name"
+        type: "string"
+        in: "path"
+        required: true
+        description: "run name the test case from"
+      - name: "case_id"
+        type: "string"
+        in: "path"
+        required: true
+        description: "case ID"
+      responses:
+        "200":
+          description: OK
+  /runs/{run_name}/cases/{case_id}/update:
+    post:
+      tags:
+      - runs
+      description: "update test cases bug info and comments"
+      parameters:
+      - name: "run_name"
+        type: "string"
+        in: "path"
+        required: true
+      - name: "case_id"
+        type: "string"
+        in: "path"
+        required: true
+      - name: "body"
+        in: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/bugAndComments"
+      responses:
+        "200":
+          description: "null"
+  /products:
+    get:
+      tags:
+      - products
+      description: "list products information"
+      responses:
+        "200":
+          description: "fetch the product info successfully"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/product"
+  /products/{product_name}/runs/summaries:
+    get:
+      tags:
+      - products
+      description: "list products runs summaries"
+      parameters:
+      - name: "product_name"
+        type: "string"
+        required: true
+        in: "path"
+      responses:
+        "200":
+          description: "fetch the runs summaries in a particular product"
+          schema:
+            $ref: "#/definitions/runsSummaries"
+  /products/{product_name}:
+    get:
+      tags:
+      - products
+      description: "list a specific product info"
+      parameters:
+      - name: "product_name"
+        type: "string"
+        required: true
+        in: "path"
+      responses:
+        "200":
+          description: "fectch a specific product info"
+          schema:
+            $ref: "#/definitions/product"
+  /calendars/create:
+    post:
+      tags:
+      - calendars
+      description: "create important dates"
+      parameters:
+      - name: "body"
+        in: "body"
+        required: true
+        schema:
+          type: "array"
+          items:
+            $ref: "#/definitions/calendar"
+      responses:
+        "200":
+          description: "null"
+      deprecated: true
+  /calendars/{batch_id}:
+    delete:
+      tags:
+      - calendars
+      description: "remove batch from calendars"
+      parameters:
+      - name: "batch_id"
+        type: "string"
+        in: "path"
+        required: true
+        description: "errata batch ID/name"
+      responses:
+        "200":
+          description: "null"
+      deprecated: true
+definitions:
+  originalRun:
+    type: "object"
+    required: 
+    - "product"
+    - "cases"
+    properties:
+      product:
+        type: "string"
+      start-time:
+        type: "string"
+      end-time:
+        type: "string"
+      type:
+        type: "string"
+      owner:
+        type: "string"
+      arch:
+        type: "string"
+      host-ip:
+        type: "string"
+      cases:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            name:
+              type: "string"
+            result:
+              type: "string"
+              enum: 
+              - "0"
+              - "1"
+              - "2"
+              description: >
+                test case result:
+                  * `0` - pass
+                  * `1` - fail
+                  * `2` - N/A
+            bug:
+              type: "string"
+            comments:
+              type: "string"
+  run:
+    type: "object"
+    properties:
+      _id:
+        type: "object"
+        properties:
+          $oid:
+            type: "string"
+      run_name:
+        type: "string"
+      product:
+        type: "string"
+      start-time:
+        type: "string"
+      end-time:
+        type: "string"
+      type:
+        type: "string"
+      owner:
+        type: "string"
+      arch:
+        type: "string"
+      host-ip:
+        type: "string"
+      cases:
+        type: "object"
+        properties:
+          _id:
+            type: "object"
+            properties:
+              $oid:
+                type: "string"
+          name:
+            type: "string"
+          result:
+            type: "string"
+            enum: 
+            - "0"
+            - "1"
+            - "2"
+            description: >
+              test case result:
+                * `0` - pass
+                * `1` - fail
+                * `2` - N/A
+          bug:
+            type: "string"
+          comments:
+            type: "string"
+  bugAndComments:
+    type: "object"
+    properties:
+      bug:
+        type: "string"
+      comments:
+        type: "string"
+  product:
+    type: "object"
+    properties:
+      _id:
+        type: "object"
+        properties:
+          $oid:
+            type: "string"
+      name:
+        type: "string"
+      runs:
+        type: "array"
+        items:
+          type: "string"
+          description: "run names"
+  runsSummaries:
+    type: "array"
+    items:
+      type: "object"
+      properties:
+        _id:
+          type: "object"
+          properties:
+            $oid:
+              type: string
+        run_name:
+          type: "string"
+        product:
+          type: "string"
+        pass_count:
+          type: "integer"
+        fail_count:
+          type: "integer"
+        na_count:
+          type: "integer"
+  calendar:
+    type: "object"
+    properties:
+      date:
+        type: "string"
+        description: "xxxx-xx-xx"
+      type:
+        type: "string"
+        enum: 
+        - "RPMs"
+        - "containers"
+        - "cloud-images"
+      batch:
+        type: "string"
+        description: "errata batch ID/name"
+      link:
+        type: "string"
+        description: "errata batch link"
+      status:
+        type: "string"
+        description: "GA or REL_PREP or ON_QA"
+      mark:
+        type: "string"
+        description: "urgent etc./"
+externalDocs:
+  description: "Find out more about zelda"
+  url: "https://docs.engineering.redhat.com/display/ATOMICQE/Zelda+project"
